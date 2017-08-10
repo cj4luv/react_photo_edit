@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import ReactImageCrop from './component/ReactImageCrop';
 import './component/ReactImageCrop.css';
+import Toggle from 'react-toggle';
+import 'react-toggle/style.css';
+import './App.css';
 
 
 class App extends Component {
@@ -8,12 +11,12 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-         image: null,
-         online: false,
-         refreshStatus: false,
-         rectangleStatus: false,
-         resizeStatus: true
-     };
+      image: null,
+      online: false,
+      refreshStatus: false,
+      rectangleStatus: false,
+      resizeStatus: true
+    };
     this.onCropped = this._onCropped.bind(this);
     this.cropImage = this._cropImage.bind(this);
   }
@@ -37,30 +40,34 @@ class App extends Component {
         <div className="app">
             <div className="imageWindows">
                 <div className="image1">
-                  <ReactImageCrop borderStyle={"dashed #dddddd 2px"} onCrop={this.onCropped}
-                                                        src={src}
-                                                        square={this.state.rectangleStatus}
-                                                        resize={this.state.resizeStatus}/></div>
+                  <ReactImageCrop
+                    setWidth={292}
+                    borderStyle={"dashed #dddddd 2px"}
+                    onCrop={this.onCropped}
+                    src={src}
+                    square={this.state.rectangleStatus}
+                    resize={this.state.resizeStatus}/>
+                </div>
                 <div className="image2"><img ref="image" src={src} alt=""/></div>
             </div>
             <div className="settings">
                 <div className="pnkt">
                     <label>
-                        <button defaultChecked={this.state.refreshStatus}
+                        <Toggle defaultChecked={this.state.refreshStatus}
                                 onChange={()=>_this.setState({refreshStatus: !_this.state.refreshStatus})}/>
                         <span>Continuously refresh cropped image</span>
                     </label>
                 </div>
                 <div className="pnkt">
                     <label>
-                        <button defaultChecked={this.state.rectangleStatus}
+                        <Toggle defaultChecked={this.state.rectangleStatus}
                                 onChange={()=>_this.setState({rectangleStatus: !_this.state.rectangleStatus})}/>
                         <span>Activate rectangle</span>
                     </label>
                 </div>
                 <div className="pnkt">
                     <label>
-                        <button defaultChecked={this.state.resizeStatus}
+                        <Toggle defaultChecked={this.state.resizeStatus}
                                 onChange={()=>_this.setState({resizeStatus: !_this.state.resizeStatus})}/>
                         <span>Resize cropped image</span>
                     </label>
