@@ -5,40 +5,40 @@ const deepExtend = require('deep-extend')
 const PropTypes = require('prop-types')
 
 class Cropper extends Component {
-    constructor(props) {
-        super(props);
-        let {originX, originY, width, height, fixedRatio, ratio, styles} = props
-        this.state = {
-            // background image width
-            imgWidth: '100%',
-            // background image height
-            imgHeight: 'auto',
-            // cropper width, drag trigger changing
-            frameWidth4Style: width,
-            // cropper height, drag trigger changing
-            frameHeight4Style: fixedRatio ? (width / ratio) : height,
-            // cropper height, drag trigger changing
-            toImgTop4Style: 0,
-            toImgLeft4Style: 0,
-            // cropper original position(x axis), accroding to image left
-            originX,
-            // cropper original position(y axis), accroding to image top
-            originY,
-            // dragging start, position's pageX and pageY
-            startPageX: 0,
-            startPageY: 0,
-            // frame width, change only dragging stop
-            frameWidth: width,
-            // frame height, change only dragging stop
-            frameHeight: fixedRatio ? (width / ratio) : height,
-            dragging: false,
-            maxLeft: 0,
-            maxTop: 0,
-            action: null,
-            imgLoaded: false,
-            styles: deepExtend({}, defaultStyles, styles),
-        }
+  constructor(props) {
+    super(props);
+    let {originX, originY, width, height, fixedRatio, ratio, styles} = props
+    this.state = {
+      // background image width
+      imgWidth: '100%',
+      // background image height
+      imgHeight: 'auto',
+      // cropper width, drag trigger changing
+      frameWidth4Style: width,
+      // cropper height, drag trigger changing
+      frameHeight4Style: fixedRatio ? (width / ratio) : height,
+      // cropper height, drag trigger changing
+      toImgTop4Style: 0,
+      toImgLeft4Style: 0,
+      // cropper original position(x axis), accroding to image left
+      originX,
+      // cropper original position(y axis), accroding to image top
+      originY,
+      // dragging start, position's pageX and pageY
+      startPageX: 0,
+      startPageY: 0,
+      // frame width, change only dragging stop
+      frameWidth: width,
+      // frame height, change only dragging stop
+      frameHeight: fixedRatio ? (width / ratio) : height,
+      dragging: false,
+      maxLeft: 0,
+      maxTop: 0,
+      action: null,
+      imgLoaded: false,
+      styles: deepExtend({}, defaultStyles, styles),
     }
+  }
 
     // initialize style, component did mount or component updated.
     initStyles (){
@@ -124,7 +124,7 @@ class Cropper extends Component {
     imgGetSizeBeforeLoad() {
         let that = this
         // trick way to get naturalwidth of image after component did mount
-        setTimeout(function () {
+        setTimeout(() => {
             let img = ReactDOM.findDOMNode(that.refs.img)
             if (img && img.naturalWidth) {
                 const {beforeImgLoad} = that.props

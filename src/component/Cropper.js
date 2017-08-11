@@ -117,7 +117,7 @@ class Cropper extends Component {
 
     // image onloaded hook
     imgOnLoad() {
-        this.props.onImgLoad()
+      this.props.onImgLoad()
     }
 
     // adjust image height when image size scaleing change, also initialize styles
