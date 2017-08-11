@@ -21,12 +21,13 @@ class App extends Component {
     return (
       <div style={{
         width:'100%',
+        height: 'auto',
         alignItems:'center',
         justifyContent:'center',
         border: '1px solid red',
         display: 'flex'
       }}>
-        <MyCropper src={src} alt=""  onImgLoad={() => this.handleImageLoaded('image')}/>
+        <MyCropper ref="image" src={src} alt="" onImgLoad={() => this.handleImageLoaded('image')}/>
       </div>
     );
   }
