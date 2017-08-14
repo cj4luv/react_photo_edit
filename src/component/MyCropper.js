@@ -84,7 +84,7 @@ class MyCropper extends Component {
     let that = this
     // trick way to get naturalwidth of image after component did mount
     setTimeout(() => {
-      let img = ReactDOM.findDOMNode(that.refs.img) // find
+      let img = ReactDOM.findDOMNode(that.refs.img)
       if(img && img.naturalWidth) {
         // image scaleing
 
@@ -107,6 +107,12 @@ class MyCropper extends Component {
 
   // starting dragging
   handleDragStart(e) {
+    const {allowNewSelection} = this.props
+    const action = e.target.getAttribute('data-action')
+                    ? e.target.getAttribute('data-action')
+                    : e.target.parentNode.getAttribute('data-action')
+
+    console.log("action", action)
     e.preventDefault()
     // drag start, set startPageX, startPageY for dragging start point
     this.setState({
@@ -133,7 +139,6 @@ class MyCropper extends Component {
   imgOnLoad() {
     this.props.onImgLoad()
   }
-
 
   /**
    * @param number $pageX $pageY They return x,y position in all browoser page to include scroll area
@@ -167,8 +172,18 @@ class MyCropper extends Component {
         _left = originX + _x
       }
 
-      console.log('widht: ', _width, 'height: ', _height )
+      // calc position
+      return this.calcPosition(_width, _height, _left, _top)
     }
+  }
+
+  // frame widht, frame height, position left, position top
+  calcPosition(width, height, left, top, callback) {
+    const {imgWidth, imgHeight} = this.state
+    const {ratio, fixedRatio} = this.props
+
+    // width < 0 or height < 0, frame invalid
+    if(width < 0 || height < 0) return false
   }
 
   render() {
@@ -233,6 +248,13 @@ class MyCropper extends Component {
                 />
               </div>
 
+              {/*move element*/}
+              <span style={ styles.move } data-action='move'></span>
+              {/*move center element*/}
+              <span style={ deepExtend({}, styles.dot, styles.dotCenter) } data-action='move'>
+                  <span style={ deepExtend({}, styles.dotInner, styles.dotInnerCenterVertical) }></span>
+                  <span style={ deepExtend({}, styles.dotInner, styles.dotInnerCenterHorizontal) }></span>
+              </span>
 
             </div>
           </div>
@@ -263,6 +285,7 @@ MyCropper.defaultProps = {
   width: 200,
   height: 200,
   fixedRatio: true,
+  allowNewSelection: true,
   ratio: 1,
   originX: 0,
   originY: 0,
@@ -294,7 +317,6 @@ let defaultStyles = {
     position: 'absolute',
     left: 0,
     top: 0,
-    border: '1px solid blue'
   },
 
   source_img: {
@@ -322,8 +344,60 @@ let defaultStyles = {
 
   dragging_frame: {
     opacity: .0,
-  }
+  },
 
+  move: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      right: 0,
+      cursor: 'move',
+      outline: '1px dashed #88f',
+      backgroundColor: 'transparent'
+  },
+
+  dot: {
+      zIndex: 10
+  },
+  dotCenter: {
+      backgroundColor: 'transparent',
+      cursor: 'move'
+  },
+
+  dotInner: {
+      border: '1px solid #88f',
+      background: '#fff',
+      display: 'block',
+      width: 6,
+      height: 6,
+      padding: 0,
+      margin: 0,
+      position: 'absolute'
+  },
+
+  dotInnerCenterVertical: {
+      position: 'absolute',
+      border: 'none',
+      width: 2,
+      height: 8,
+      backgroundColor: '#88f',
+      top: '50%',
+      left: '50%',
+      marginLeft: -1,
+      marginTop: -4,
+  },
+  dotInnerCenterHorizontal: {
+      position: 'absolute',
+      border: 'none',
+      width: 8,
+      height: 2,
+      backgroundColor: '#88f',
+      top: '50%',
+      left: '50%',
+      marginLeft: -4,
+      marginTop: -1
+  },
 }
 
 export default MyCropper;

@@ -182,7 +182,7 @@ class Cropper extends Component {
                 width = width - ((width + left) - imgWidth)
             }
         }
-        // frame heigth plust offset top, larger than img's height
+        // frame height plust offset top, larger than img's height
         if (height + top > imgHeight) {
             if (fixedRatio) {
                 // if fixed ratio, adjust top with height
