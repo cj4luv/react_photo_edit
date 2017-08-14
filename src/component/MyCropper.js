@@ -37,6 +37,7 @@ class MyCropper extends Component {
       action: null,
       imgLoaded: false,
       styles: deepExtend({}, defaultStyles, styles),
+
     };
   }
 
@@ -67,7 +68,7 @@ class MyCropper extends Component {
     if(width !== nextProps.width || height !== nextProps.height
       || originX !== nextProps.originX || originY !== nextProps.originY) {
 
-        console.log('will receive')
+        // console.log('will receive')
 
         // update frame
         this.setState({
@@ -101,7 +102,7 @@ class MyCropper extends Component {
       e.preventDefault()
       let {action} = this.state
       if(!action) return this.createNewFrame(e)
-      if(action === 'move') return console.log('move')
+      if(action === 'move') return console.log('handle Drag move')
     }
   }
 
@@ -112,20 +113,40 @@ class MyCropper extends Component {
                     ? e.target.getAttribute('data-action')
                     : e.target.parentNode.getAttribute('data-action')
 
-    console.log("action", action)
-    e.preventDefault()
-    // drag start, set startPageX, startPageY for dragging start point
-    this.setState({
-      dragging: true,
-    })
+    const pageX = e.pageX ? e.pageX : e.targetTouches[0].pageX
+    const pageY = e.pageY ? e.pageY : e.targetTouches[0].pageY
 
-    console.log('drag start',this.state.dragging);
+    // if drag or move or allow new selection, change startPageX, startPageY, dragging state
+    if(action || allowNewSelection) {
+      e.preventDefault()
+      // drag start, set startPageX, startPageY for dragging start point
+      this.setState({
+        startPageX: pageX,
+        startPageY: pageY,
+        dragging: true,
+        action
+      })
+      // console.log('drag start',this.state.dragging);
+    }
+    // if no action and allowNewSelection, then create a new frame
+    if(!action && allowNewSelection) {
+      let container = ReactDOM.findDOMNode(this.refs.container)
+      const {offsetLeft, offsetTop} = container
+
+      this.setState({
+        // set offset left and top of new frame
+        originX: pageX - offsetLeft,
+        originY: pageY - offsetTop,
+        frameWidth: 2,
+        frameHeight: 2,
+      }, () => this.calcPosition(2,2, pageX - offsetLeft, pageY - offsetTop) )
+    }
   }
 
   // stop dragging
   handleDragStop(e) {
     if(this.state.dragging) {
-      console.log('mouse up',this.state.dragging);
+      // console.log('mouse up',this.state.dragging);
       e.preventDefault()
       const frameNode = ReactDOM.findDOMNode(this.refs.frameNode)
       const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
@@ -184,6 +205,69 @@ class MyCropper extends Component {
 
     // width < 0 or height < 0, frame invalid
     if(width < 0 || height < 0) return false
+    // if ratio is fixed
+    if(fixedRatio) {
+      // adjust by widht
+      if(width / imgWidth > height / imgHeight) {
+        if(width > imgWidth) {
+          width = imgWidth
+          left = 0
+          height - width / ratio
+        }
+      } else {
+        //adjust by height
+        if(height > imgHeight) {
+          height = imgHeight
+          top = 0
+          width = height * ratio
+        }
+      }
+    }
+
+    // frame widht plus offset left, larger than img's width
+    if(width + left > imgWidth) {
+      if(fixedRatio) {
+        // if fixed ratio, adjust left with width
+        left = imgWidth - width
+      } else {
+        // resize width with left
+        width = width - ((width + left) - imgWidth)
+      }
+    }
+    // frame height plus offset top, larger than img's height
+    if(height + top > imgHeight) {
+      if(fixedRatio) {
+        // if fixed ratio, adjust top with height
+        top = imgHeight - height
+      } else {
+        // resize height with top
+        height = height - ((height + top) - imgHeight)
+      }
+    }
+    // left is invalid
+    if(left < 0) {
+      left = 0
+    }
+    // top is invalid
+    if(top < 0) {
+      top = 0
+    }
+    // if frame width larger than img width
+    if(width > imgWidth) {
+      width = imgWidth
+    }
+    // if frame height larger than img height
+    if(height > imgHeight) {
+      height = imgHeight
+    }
+    this.setState({
+      toImgLeftStyle: left,
+      toImgTopStyle: top,
+      frameWidthStyle: width,
+      frameHeightStyle: height
+    }, () => {
+      if(callback) callback(this)
+    })
   }
 
   render() {
@@ -358,11 +442,11 @@ let defaultStyles = {
   },
 
   dot: {
-      zIndex: 10
+    zIndex: 10
   },
   dotCenter: {
-      backgroundColor: 'transparent',
-      cursor: 'move'
+    backgroundColor: 'transparent',
+    cursor: 'move',
   },
 
   dotInner: {
