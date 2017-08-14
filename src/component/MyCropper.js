@@ -6,8 +6,8 @@ import PropTypes from 'prop-types';
 class MyCropper extends Component {
   constructor(props) {
     /**
-   	 * @param number $ratio container radio
-     * @param bool $fixedRatio checked fixed radio
+   	 * @param number $ratio container ratio
+     * @param bool $fixedRatio checked fixed ratio
    	 */
     let {originX, originY, width, height, fixedRatio, ratio, styles} = props
     super(props);
@@ -21,7 +21,7 @@ class MyCropper extends Component {
       // cropper height, drag trigger changing
       toImgTopStyle:0,
       toImgLeftStyle:0,
-      // crroper original position(x,y axis), accroding to image left and top (좌표)
+      // crroper original position(x axis,y axis), according to image left and top
       originX,
       originY,
       // dragging start, position's pageX and pageY
@@ -41,6 +41,7 @@ class MyCropper extends Component {
   }
 
   componentDidMount() {
+    // event
     document.addEventListener('mousemove', this.handleDrag.bind(this))
     document.addEventListener('touchmove', this.handleDrag.bind(this))
 
@@ -51,12 +52,31 @@ class MyCropper extends Component {
   }
 
   componentWillUnmount() {
-    console.log('unmout')
+    // remove event
+    document.removeEventListener('mousemove', this.handleDrag.bind(this))
+    document.removeEventListener('touchmove', this.handleDrag.bind(this))
+
+    document.removeEventListener('mouseup', this.handleDragStop.bind(this))
+    document.removeEventListener('touchend', this.handleDragStop.bind(this))
   }
 
+  // props change to update frame
   componentWillReceiveProps(nextProps) {
-    // const {width, height, originX, originY} = this.props
-    // console.log('nextprops');
+    const {width, height, originX, originY} = this.props
+
+    if(width !== nextProps.width || height !== nextProps.height
+      || originX !== nextProps.originX || originY !== nextProps.originY) {
+
+        console.log('will receive')
+
+        // update frame
+        this.setState({
+          frameWidth: nextProps.width,
+          frameHeight: nextProps.height,
+          originX: nextProps.originX,
+          originY: nextProps.originY
+        })
+      }
   }
 
   // adjust image height when image size scaleing change, also initialize styles
@@ -64,7 +84,7 @@ class MyCropper extends Component {
     let that = this
     // trick way to get naturalwidth of image after component did mount
     setTimeout(() => {
-      let img = ReactDOM.findDOMNode(that.refs.img)
+      let img = ReactDOM.findDOMNode(that.refs.img) // find
       if(img && img.naturalWidth) {
         // image scaleing
 
@@ -75,12 +95,18 @@ class MyCropper extends Component {
     }, 0)
   }
 
+  // judge whether to create new frame, frame or frame dot move accroding to action
   handleDrag(e) {
-    //console.log(e);
+    if(this.state.dragging) {
+      e.preventDefault()
+      let {action} = this.state
+      if(!action) return this.createNewFrame(e)
+      if(action === 'move') return console.log('move')
+    }
   }
 
+  // starting dragging
   handleDragStart(e) {
-
     e.preventDefault()
     // drag start, set startPageX, startPageY for dragging start point
     this.setState({
@@ -90,10 +116,14 @@ class MyCropper extends Component {
     console.log('drag start',this.state.dragging);
   }
 
+  // stop dragging
   handleDragStop(e) {
     if(this.state.dragging) {
       console.log('mouse up',this.state.dragging);
       e.preventDefault()
+      const frameNode = ReactDOM.findDOMNode(this.refs.frameNode)
+      const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
+      const {imgWidth, imgHeight} = this.state
       this.setState({
         dragging: false,
       })
@@ -102,6 +132,43 @@ class MyCropper extends Component {
 
   imgOnLoad() {
     this.props.onImgLoad()
+  }
+
+
+  /**
+   * @param number $pageX $pageY They return x,y position in all browoser page to include scroll area
+   */
+  // create a new frame, and drag, so frame widht and height is become larger
+  createNewFrame(e) {
+    if(this.state.dragging) {
+      // click or touch event
+      const pageX = e.pageX ? e.pageX : e.targetTouches[0].pageX
+      const pageY = e.pageY ? e.pageY : e.targetTouches[0].pageY
+      const {ratio, fixedRatio} = this.props
+      const {frameWidth, frameHeight, startPageX, startPageY, originX, originY} = this.state
+
+      // click or touch point's offset from source image top
+      const _x = pageX - startPageX
+      const _y = pageY - startPageY
+
+      // frame new widht, height, left, top
+      let _width = frameWidth + Math.abs(_x)
+      let _height = fixedRatio ? (frameWidth + Math.abs(_x)) / ratio : frameHeight + Math.abs(_y)
+      let _left = originX
+      let _top = originY
+
+      if(_y < 0) {
+        // drag and resize to top, top changing
+        _top = fixedRatio ? originY - Math.abs(_x) / ratio : originY - Math.abs(_y)
+      }
+
+      if(_x < 0) {
+        // drag and resize, go to left, left changing
+        _left = originX + _x
+      }
+
+      console.log('widht: ', _width, 'height: ', _height )
+    }
   }
 
   render() {
@@ -149,6 +216,23 @@ class MyCropper extends Component {
                 height: this.state.frameHeightStyle
               }
             )}>
+
+              {/*clone img*/}
+              <div style={styles.clone}>
+                <img src={src} crossOrigin="anonymous"
+                  width={imgWidth} height={imgHeight}
+                  style={deepExtend({},
+                    styles.img,
+                    {
+                      marginLeft: -this.state.toImgLeftStyle,
+                      marginTop: - this.state.toImgTopStyle
+                    }
+                  )}
+                  ref='cloneImg'
+                  alt={alt}
+                />
+              </div>
+
 
             </div>
           </div>
@@ -201,6 +285,16 @@ let defaultStyles = {
     WebkitTransform: 'translateZ(0)',
     WebkitPerspective: 1000,
     WebkitBackfaceVisibility: 'hidden'
+  },
+
+  clone: {
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    border: '1px solid blue'
   },
 
   source_img: {
