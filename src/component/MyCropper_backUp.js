@@ -7,11 +7,9 @@ class MyCropper extends Component {
   constructor(props) {
     /**
    	 * @param number $ratio container ratio
-     * @param bool $fixedRatio checked fixed ratio (1:1)
-     * @param number $originX.Y 크랍 될 부분 중심 좌표
+     * @param bool $fixedRatio checked fixed ratio
    	 */
     let {originX, originY, width, height, fixedRatio, ratio, styles} = props
-    // console.log('originX', originX, 'originY', originY)
     super(props);
     this.state = {
       // background image width and height
@@ -44,7 +42,6 @@ class MyCropper extends Component {
   }
 
   componentDidMount() {
-    console.log('0.did mount')
     // event
     document.addEventListener('mousemove', this.handleDrag.bind(this))
     document.addEventListener('touchmove', this.handleDrag.bind(this))
@@ -55,39 +52,37 @@ class MyCropper extends Component {
     this.imgGetSizeBeforeLoad()
   }
 
-  // adjust image height when image size scaleing change, also initialize styles
-  imgGetSizeBeforeLoad() {
-    console.log('1.image before load')
-    let that = this
-    // trick way to get naturalwidth of image after component did mount
-    setTimeout(() => {
-      let img = ReactDOM.findDOMNode(that.refs.img)
-      if(img && img.naturalWidth) {
-        // image scaleing
-        const {beforeImgLoad} = that.props
+  componentWillUnmount() {
+    console.log("unmout")
+    // remove event
+    document.removeEventListener('mousemove', this.handleDrag.bind(this))
+    document.removeEventListener('touchmove', this.handleDrag.bind(this))
 
-        // image scaleing
-        let _heightRatio = img.offsetWidth / img.naturalWidth
-        let height = parseInt(img.naturalHeight * _heightRatio, 10)
+    document.removeEventListener('mouseup', this.handleDragStop.bind(this))
+    document.removeEventListener('touchend', this.handleDragStop.bind(this))
+  }
 
-        // resize imgHeight
-        that.setState({
-          imgHeight: height,
-          imgLoaded: true,
-        }, () => that.initStyles())
-        // before image loaded hook
-        beforeImgLoad()
-      } else if (img) {
-        // catch if image naturalWidth is 0
-        that.imgGetSizeBeforeLoad()
+  // props change to update frame
+  componentWillReceiveProps(nextProps) {
+    const {width, height, originX, originY} = this.props
+
+    if(width !== nextProps.width || height !== nextProps.height
+      || originX !== nextProps.originX || originY !== nextProps.originY) {
+
+        console.log('will receive')
+
+        // update frame
+        this.setState({
+          frameWidth: nextProps.width,
+          frameHeight: nextProps.height,
+          originX: nextProps.originX,
+          originY: nextProps.originY
+        })
       }
-    }, 0)
   }
 
   // initialize style, component did mount or component updated
-  // 크랍 할 부분의 이미지 좌표와 출력될 이미지 부분
   initStyles() {
-    console.log("2.init style")
     const container = ReactDOM.findDOMNode(this.refs.container);
     this.setState({
       imgWidth: container.offsetWidth
@@ -124,20 +119,45 @@ class MyCropper extends Component {
     })
   }
 
+  // adjust image height when image size scaleing change, also initialize styles
+  imgGetSizeBeforeLoad() {
+    let that = this
+    // trick way to get naturalwidth of image after component did mount
+    setTimeout(() => {
+      let img = ReactDOM.findDOMNode(that.refs.img)
+      if(img && img.naturalWidth) {
+        // image scaleing
+        const {beforeImgLoad} = that.props
 
+        // image scaleing
+        let _heightRatio = img.offsetWidth / img.naturalWidth
+        let height = parseInt(img.naturalHeight * _heightRatio, 10)
+
+        // resize imgHeight
+        that.setState({
+          imgHeight: height,
+          imgLoaded: true,
+        }, () => that.initStyles())
+        // before image loaded hook
+        beforeImgLoad()
+      } else if (img) {
+        // catch if image naturalWidth is 0
+        that.imgGetSizeBeforeLoad()
+      }
+    }, 0)
+  }
 
   // judge whether to create new frame, frame or frame dot move accroding to action
-  // 마우스 드래그 일때 실행
   handleDrag(e) {
     if(this.state.dragging) {
       e.preventDefault()
       let {action} = this.state
       if(!action) return this.createNewFrame(e)
+      if(action === 'move') return console.log('handle Drag move')
     }
   }
 
   // starting dragging
-  // 이미지 영역을 클릭 했을 때
   handleDragStart(e) {
     const {allowNewSelection} = this.props
     const action = e.target.getAttribute('data-action')
@@ -157,42 +177,37 @@ class MyCropper extends Component {
         dragging: true,
         action
       })
-      // console.log('drag start page position \n', 'pageX', pageX, 'pageY', pageY)
+      // console.log('drag start',this.state.dragging);
     }
     // if no action and allowNewSelection, then create a new frame
     if(!action && allowNewSelection) {
       let container = ReactDOM.findDOMNode(this.refs.container)
       const {offsetLeft, offsetTop} = container
 
-      let originX = pageX - offsetLeft
-      let originY = pageY - offsetTop
-
-      let frameWidth = 2
-      let frameHeight = 2
-
       this.setState({
         // set offset left and top of new frame
-        originX: originX,
-        originY: originY,
-        frameWidth: frameWidth,
-        frameHeight: frameHeight,
-      }, () => this.calcPosition(frameWidth,frameHeight, originX, originY) )
-      console.log("drag start origin position \n", "originX", originX, "originY", originY)
+        originX: pageX - offsetLeft,
+        originY: pageY - offsetTop,
+        frameWidth: 2,
+        frameHeight: 2,
+      }, () => this.calcPosition(2,2, pageX - offsetLeft, pageY - offsetTop) )
     }
   }
 
   // stop dragging
   handleDragStop(e) {
     if(this.state.dragging) {
+      // console.log('mouse up',this.state.dragging);
       e.preventDefault()
+      const frameNode = ReactDOM.findDOMNode(this.refs.frameNode)
+      const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
+      const {imgWidth, imgHeight} = this.state
       this.setState({
         dragging: false,
       })
     }
   }
 
-
-  //image가 로드 된 이후로 실행 되는 함수
   imgOnLoad() {
     this.props.onImgLoad()
   }
@@ -201,7 +216,6 @@ class MyCropper extends Component {
    * @param number $pageX $pageY They return x,y position in all browoser page to include scroll area
    */
   // create a new frame, and drag, so frame widht and height is become larger
-  // 마우스 드래그 일때 새로운 프레임 생성 부분
   createNewFrame(e) {
     if(this.state.dragging) {
       // click or touch event
@@ -230,8 +244,6 @@ class MyCropper extends Component {
         _left = originX + _x
       }
 
-      // console.log('create new frame', 'widht ', _width, 'height ', _height, 'left ', _left, 'top ', _top)
-
       // calc position
       return this.calcPosition(_width, _height, _left, _top)
     }
@@ -243,7 +255,6 @@ class MyCropper extends Component {
     const {ratio, fixedRatio} = this.props
     // width < 0 or height < 0, frame invalid
     if(width < 0 || height < 0) return false
-
     // if ratio is fixed
     if(fixedRatio) {
       // adjust by widht
@@ -251,7 +262,7 @@ class MyCropper extends Component {
         if(width > imgWidth) {
           width = imgWidth
           left = 0
-          height = width / ratio
+          height - width / ratio
         }
       } else {
         //adjust by height
@@ -307,7 +318,6 @@ class MyCropper extends Component {
     }, () => {
       if(callback) callback(this)
     })
-    console.log('calc position \n','widht ', width, 'height ', height, 'left ', left, 'top ', top)
   }
 
   render() {
@@ -339,7 +349,7 @@ class MyCropper extends Component {
         {imageNode}
         {imgLoaded ?
           <div>
-            <div style={styles.modal}></div>
+            <div  style={styles.modal}></div>
             {/*frame container*/}
             <div ref='frameNode' style={
               deepExtend({},
@@ -369,6 +379,15 @@ class MyCropper extends Component {
                   alt={alt}
                 />
               </div>
+
+              {/*move element*/}
+              <span style={ styles.move } data-action='move'></span>
+              {/*move center element*/}
+              <span style={ deepExtend({}, styles.dot, styles.dotCenter) } data-action='move'>
+                  <span style={ deepExtend({}, styles.dotInner, styles.dotInnerCenterVertical) }></span>
+                  <span style={ deepExtend({}, styles.dotInner, styles.dotInnerCenterHorizontal) }></span>
+              </span>
+
             </div>
           </div>
           : null
@@ -432,12 +451,8 @@ let defaultStyles = {
     top: 0,
   },
 
-  source: {
-    overflow: 'hidden'
-  },
-
   source_img: {
-    float: 'left'
+      float: 'left'
   },
 
   modal: {
@@ -447,7 +462,7 @@ let defaultStyles = {
     bottom: 0,
     right: 0,
     opacity: .4,
-    backgroundColor: '#222',
+    backgroundColor: '#222'
   },
 
   frame: {
@@ -460,7 +475,60 @@ let defaultStyles = {
   },
 
   dragging_frame: {
-    opacity: .8,
+    opacity: .0,
+  },
+
+  move: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      right: 0,
+      cursor: 'move',
+      outline: '1px dashed #88f',
+      backgroundColor: 'transparent'
+  },
+
+  dot: {
+    zIndex: 10
+  },
+  dotCenter: {
+    backgroundColor: 'transparent',
+    cursor: 'move',
+  },
+
+  dotInner: {
+      border: '1px solid #88f',
+      background: '#fff',
+      display: 'block',
+      width: 6,
+      height: 6,
+      padding: 0,
+      margin: 0,
+      position: 'absolute'
+  },
+
+  dotInnerCenterVertical: {
+      position: 'absolute',
+      border: 'none',
+      width: 2,
+      height: 8,
+      backgroundColor: '#88f',
+      top: '50%',
+      left: '50%',
+      marginLeft: -1,
+      marginTop: -4,
+  },
+  dotInnerCenterHorizontal: {
+      position: 'absolute',
+      border: 'none',
+      width: 8,
+      height: 2,
+      backgroundColor: '#88f',
+      top: '50%',
+      left: '50%',
+      marginLeft: -4,
+      marginTop: -1
   },
 }
 

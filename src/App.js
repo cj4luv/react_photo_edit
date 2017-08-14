@@ -24,10 +24,14 @@ class App extends Component {
         height: 'auto',
         alignItems:'center',
         justifyContent:'center',
-        border: '1px solid red',
-        display: 'flex'
+        display: 'flex',
+        // border: '1px solid red',
       }}>
-        <MyCropper ref="image" src={src} alt="" onImgLoad={() => this.handleImageLoaded('image')}/>
+        <MyCropper ref="image" src={src} alt="" onImgLoad={() => this.handleImageLoaded('image')}
+          originX={100}
+          originY={100}
+          fixedRatio={false}
+        />
       </div>
     );
   }
