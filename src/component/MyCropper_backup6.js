@@ -56,7 +56,7 @@ class MyCropper extends Component {
   }
 
   componentDidMount() {
-    // console.log('1.did mount')
+    console.log('1.did mount')
     // event
     document.addEventListener('mousemove', this.handleDrag.bind(this))
     document.addEventListener('touchmove', this.handleDrag.bind(this))
@@ -70,7 +70,7 @@ class MyCropper extends Component {
   // adjust image height when image size scaleing change, also initialize styles
   // 이미지 사이즈 초기화
   imgGetSizeBeforeLoad() {
-    // console.log('2.image get size before load')
+    console.log('2.image get size before load')
     let that = this
     // trick way to get naturalwidth of image after component did mount
     setTimeout(() => {
@@ -100,7 +100,7 @@ class MyCropper extends Component {
   // initialize style, component did mount or component updated
   // crop frame 포지션 및 크기 지정 함수
   initStyles() {
-    // console.log("3.init style")
+    console.log("3.init style")
     // 컴포너는 최상위 div 엔리멘탈을 가져옴
     const container = ReactDOM.findDOMNode(this.refs.container);
 
@@ -111,15 +111,19 @@ class MyCropper extends Component {
       // 부모 컴포넌트에서 지정 받은 데이터를 받아옴
       let {originX, originY} = this.props
 
-      // frame move 할당 영역을 구하기 위해 필요 한 변수들
-      const {imgWidth, imgHeight} = this.state
+      // const {imgWidth, imgHeight} = this.state
       let {frameWidth, frameHeight} = this.state
 
-      // frame move 이동영역 제한을 위한 position 값
-      const maxLeft = imgWidth - frameWidth
-      const maxTop = imgHeight - frameHeight
 
-      this.setState({maxLeft, maxTop});
+      // if(originX + frameWidth >= imgWidth) {
+      //   originX = imgWidth - frameWidth
+      //   this.setState({originX})
+      // }
+      // if (originY + frameHeight >= imgHeight) {
+      //   originY = imgHeight - frameHeight
+      //   this.setState({originY})
+      // }
+
 
       // calc clone position
       // 초기 크랍 프레임 포지션 지정
@@ -196,51 +200,19 @@ class MyCropper extends Component {
 
   //frame move handler
   frameMove(e) {
-    const {originX, originY, startPageX, startPageY, frameWidth, frameHeight, maxLeft, maxTop} = this.state
-    const pageX = e.pageX ? e.pageX : e.targetTouches[0].pageX
-    const pageY = e.pageY ? e.pageY : e.targetTouches[0].pageY
-    let _x = pageX - startPageX + originX
-    let _y = pageY - startPageY + originY
-    if (pageX < 0 || pageY < 0) return false
+    // console.log('move')
 
-    if (_x > maxLeft) _x = maxLeft
-    if (_y > maxTop) _y = maxTop
-    // frame width, frame height not change, top and left changing
-    this.calcPosition(frameWidth, frameHeight, _x, _y)
   }
 
   // stop dragging
   handleDragStop(e) {
     if(this.state.dragging) {
       e.preventDefault()
-      // frame container 엘리멘탈
-      const frameNode =ReactDOM.findDOMNode(this.refs.frameNode)
-      const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
-      const {imgWidth, imgHeight} = this.state
-
-      // new frame move를 위해 위치 정보 저장
       this.setState({
-        originX: offsetLeft,
-        originY: offsetTop,
         dragging: false,
-        frameWidth: offsetWidth,
-        frameHeight: offsetHeight,
-        maxLeft: imgWidth - offsetWidth,
-        maxTop: imgHeight - offsetHeight,
-        action: null,
-      }, () => {
-        let {onChange} = this.props
-        if (onChange) onChange(this.values())
       })
     }
   }
-
-  // get current values
-  values(){
-    const {frameWidth, frameHeight, originX, originY, imgWidth, imgHeight } = this.state
-    return { width: frameWidth, height: frameHeight, x: originX, y: originY, imgWidth, imgHeight }
-  }
-
 
   /**
    * @param number $pageX $pageY They return x,y position in all browoser page to include scroll area
@@ -333,14 +305,13 @@ class MyCropper extends Component {
     // image container 영역에 벗어 나지 않게 left, top, width, height 영억 설정
     // left is invalid
     if(left < 0) {
-      // 크랍 영역 이동됨 ...
-      // width = width + left
+      width = width + left
       left = 0
       // console.log('ss', width)
     }
     // top is invalid
     if(top < 0) {
-      // height = height + top
+      height = height + top
       top = 0
     }
     // if frame width larger than img width
@@ -360,25 +331,6 @@ class MyCropper extends Component {
     }, () => {
       if(callback) callback(this)
     })
-  }
-
-  // crop image
-  crop(){
-    const {frameWidth, frameHeight, originX, originY, imgWidth} = this.state
-    let canvas = document.createElement('canvas')
-    let img = ReactDOM.findDOMNode(this.refs.img)
-    // crop accroding image's natural width
-    const _scale = img.naturalWidth / imgWidth
-    const realFrameWidth = frameWidth * _scale
-    const realFrameHeight = frameHeight * _scale
-    const realOriginX = originX * _scale
-    const realOriginY = originY * _scale
-
-    canvas.width = frameWidth
-    canvas.height = frameHeight
-
-    canvas.getContext("2d").drawImage(img, realOriginX, realOriginY, realFrameWidth, realFrameHeight, 0, 0, frameWidth, frameHeight)
-    return canvas.toDataURL()
   }
 
   //image가 로드 된 이후로 실행 되는 함수
@@ -419,7 +371,7 @@ class MyCropper extends Component {
             <div style={styles.layer}></div>
 
             {/*frame container*/}
-            <div ref='frameNode' style={
+            <div style={
               deepExtend({},
               styles.frame,
               dragging ? styles.dragging_frame:{},

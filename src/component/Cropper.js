@@ -42,6 +42,7 @@ class Cropper extends Component {
 
     // initialize style, component did mount or component updated.
     initStyles (){
+      // console.log('init style')
         const container = ReactDOM.findDOMNode(this.refs.container)
         this.setState({
             imgWidth: container.offsetWidth
@@ -118,10 +119,12 @@ class Cropper extends Component {
     // image onloaded hook
     imgOnLoad() {
       this.props.onImgLoad()
+      // console.log('img on load')
     }
 
     // adjust image height when image size scaleing change, also initialize styles
     imgGetSizeBeforeLoad() {
+      // console.log('img get size before load')
         let that = this
         // trick way to get naturalwidth of image after component did mount
         setTimeout(() => {
@@ -391,7 +394,7 @@ class Cropper extends Component {
                 originY: pageY - offsetTop,
                 frameWidth: 2,
                 frameHeight: 2,
-            }, () => this.calcPosition(2, 2, pageX - offsetLeft, pageY - offsetTop) )
+            }, () => this.calcPosition(2, 2, pageX - offsetLeft, pageY - offsetTop))
         }
     }
 

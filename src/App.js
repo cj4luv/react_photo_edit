@@ -5,7 +5,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      iamge: '',
+      image: '',
       imageLoaded: false,
     };
   }
@@ -16,23 +16,29 @@ class App extends Component {
     });
   }
 
+  handleClick(state){
+    let node = this.refs[state];
+    this.setState({
+       [state]: node.crop()
+    });
+  }
+
+
   render() {
     const src = "/img/twice.png";
+
     return (
-      <div style={{
-        width:'100%',
-        height: 'auto',
-        alignItems:'center',
-        justifyContent:'center',
-        display: 'flex',
-        // border: '1px solid red',
-        backgroundColor:'black'
-      }}>
+      <div style={{width:'50pc',}}>
         <MyCropper ref="image" src={src} alt="" onImgLoad={() => this.handleImageLoaded('image')}
-          originX={100}
+          originX={150}
           originY={100}
           fixedRatio={false}
         />
+        <br />
+        {this.state.imageLoaded ? <button onClick={() => this.handleClick('image')}>crop</button> : null}
+        <h4>after crop</h4>
+        {this.state.image ? <img src={this.state.image} alt=""/> : null}
+
       </div>
     );
   }
