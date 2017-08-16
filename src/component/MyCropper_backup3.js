@@ -89,7 +89,7 @@ class MyCropper extends Component {
         // catch if image naturalWidth is 0
         that.imgGetSizeBeforeLoad()
       }
-    }, 0)
+    }, 1)
   }
 
   // initialize style, component did mount or component updated
@@ -125,7 +125,16 @@ class MyCropper extends Component {
 
       // calc clone position
       // 초기 크랍 프레임 포지션 지정
-      this.calcPosition(frameWidth, frameHeight, originX, originY)
+      this.calcPosition(frameWidth, frameHeight, originX, originY, () => {
+        const {frameWidthStyle, frameHeightStyle, toImgTopStyle, toImgLeftStyle} = this.state
+        // console.log('int \n', 'top', toImgTopStyle, 'left', toImgLeftStyle)
+        this.setState({
+          frameWidth: frameWidthStyle,
+          frameHeight: frameHeightStyle,
+          originX: originX,
+          originY: originY
+        })
+      })
 
     })
   }
@@ -181,7 +190,7 @@ class MyCropper extends Component {
         frameWidth: frameWidth,
         frameHeight: frameHeight,
       }, () => this.calcPosition(frameWidth,frameHeight, originX, originY) )
-      // console.log("drag start origin position \n", "originX", originX, "originY", originY)
+      console.log("drag start origin position \n", "originX", originX, "originY", originY)
     }
   }
 
@@ -232,7 +241,6 @@ class MyCropper extends Component {
       if(_x < 0) {
         // drag and resize, go to left, left changing
         _left = originX + _x
-        // console.log('dddddd', _left)
       }
 
       // console.log('create new frame', 'widht ', _width, 'height ', _height, 'left ', _left, 'top ', _top)
@@ -293,9 +301,7 @@ class MyCropper extends Component {
     // image container 영역에 벗어 나지 않게 left, top, width, height 영억 설정
     // left is invalid
     if(left < 0) {
-      width = width + left
       left = 0
-      // console.log('ss', width)
     }
     // top is invalid
     if(top < 0) {
@@ -315,6 +321,8 @@ class MyCropper extends Component {
       toImgTopStyle: top,
       frameWidthStyle: width,
       frameHeightStyle: height
+    }, () => {
+      if(callback) callback(this)
     })
 
     console.log('calc position \n','widht ', width, 'height ', height, 'left ', left, 'top ', top)
@@ -372,7 +380,7 @@ class MyCropper extends Component {
                     styles.img,
                     {
                       //자를 이미지 부분이 정확하게 나오기 위해서 프레임 left값 top값을 빼준다.
-                      marginLeft: - this.state.toImgLeftStyle,
+                      marginLeft: -this.state.toImgLeftStyle,
                       marginTop: - this.state.toImgTopStyle
                     }
                   )}
@@ -464,7 +472,6 @@ let defaultStyles = {
     bottom: 0,
     right: 0,
     display: 'none',
-    border:'1px solid red'
   },
 
   dragging_frame: {

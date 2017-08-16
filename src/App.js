@@ -10,7 +10,7 @@ class App extends Component {
     };
   }
 
-  handleImageLoaded(state){
+  handleImageLoaded(state) {
     this.setState({
       [state + 'Loaded']: true
     });
@@ -26,6 +26,7 @@ class App extends Component {
         justifyContent:'center',
         display: 'flex',
         // border: '1px solid red',
+        backgroundColor:'black'
       }}>
         <MyCropper ref="image" src={src} alt="" onImgLoad={() => this.handleImageLoaded('image')}
           originX={100}

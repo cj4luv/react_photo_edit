@@ -51,7 +51,7 @@ class MyCropper extends Component {
   }
 
   componentDidMount() {
-    console.log('1.did mount')
+    console.log('0.did mount')
     // event
     document.addEventListener('mousemove', this.handleDrag.bind(this))
     document.addEventListener('touchmove', this.handleDrag.bind(this))
@@ -65,18 +65,17 @@ class MyCropper extends Component {
   // adjust image height when image size scaleing change, also initialize styles
   // 이미지 사이즈 초기화
   imgGetSizeBeforeLoad() {
-    console.log('2.image get size before load')
+    console.log('1.image before load')
     let that = this
     // trick way to get naturalwidth of image after component did mount
     setTimeout(() => {
-      // 이미지 객체를 불러옴
       let img = ReactDOM.findDOMNode(that.refs.img)
-
       if(img && img.naturalWidth) {
+        // image scaleing
+        const {beforeImgLoad} = that.props
 
         // image scaleing
-        // 초기 이미지 높이 설정 부분
-        let _heightRatio = img.offsetWidth / img.naturalWidth // 이미지 랩핑 영역과 이미지 원본 넓이를 나눠 높이 비율 값을 구함
+        let _heightRatio = img.offsetWidth / img.naturalWidth
         let height = parseInt(img.naturalHeight * _heightRatio, 10)
 
         // resize imgHeight
@@ -84,7 +83,8 @@ class MyCropper extends Component {
           imgHeight: height,
           imgLoaded: true,
         }, () => that.initStyles())
-
+        // before image loaded hook
+        beforeImgLoad()
       } else if (img) {
         // catch if image naturalWidth is 0
         that.imgGetSizeBeforeLoad()
@@ -93,18 +93,19 @@ class MyCropper extends Component {
   }
 
   // initialize style, component did mount or component updated
-  // crop frame 포지션 및 위치 지정 함수
+  // 초기 크랍 할 부분의 이미지 좌표와 출력될 이미지 부분
   initStyles() {
-    console.log("3.init style")
-    // 컴포너는 최상위 div 엔리멘탈을 가져옴
+    console.log("2.init style")
     const container = ReactDOM.findDOMNode(this.refs.container);
 
     this.setState({
-      imgWidth: container.offsetWidth // container 엔리먼트 widht 값을 이미지 크기로 지정
+      imgWidth: container.offsetWidth
     }, () => {
       // calc frame widht height
       // 부모 컴포넌트에서 지정 받은 데이터를 받아옴
-      let {originX, originY} = this.props
+      let {originX, originY, disabled} = this.props
+
+      if(disabled) return
 
       const {imgWidth, imgHeight} = this.state
       let {frameWidth, frameHeight} = this.state
@@ -125,7 +126,16 @@ class MyCropper extends Component {
 
       // calc clone position
       // 초기 크랍 프레임 포지션 지정
-      this.calcPosition(frameWidth, frameHeight, originX, originY)
+      this.calcPosition(frameWidth, frameHeight, originX, originY, () => {
+        const {frameWidthStyle, frameHeightStyle, toImgTopStyle, toImgLeftStyle} = this.state
+        // console.log('int \n', 'top', toImgTopStyle, 'left', toImgLeftStyle)
+        this.setState({
+          frameWidth: frameWidthStyle,
+          frameHeight: frameHeightStyle,
+          originX: toImgLeftStyle,
+          originY: toImgTopStyle
+        })
+      })
 
     })
   }
@@ -181,7 +191,7 @@ class MyCropper extends Component {
         frameWidth: frameWidth,
         frameHeight: frameHeight,
       }, () => this.calcPosition(frameWidth,frameHeight, originX, originY) )
-      // console.log("drag start origin position \n", "originX", originX, "originY", originY)
+      console.log("drag start origin position \n", "originX", originX, "originY", originY)
     }
   }
 
@@ -232,7 +242,6 @@ class MyCropper extends Component {
       if(_x < 0) {
         // drag and resize, go to left, left changing
         _left = originX + _x
-        // console.log('dddddd', _left)
       }
 
       // console.log('create new frame', 'widht ', _width, 'height ', _height, 'left ', _left, 'top ', _top)
@@ -293,9 +302,7 @@ class MyCropper extends Component {
     // image container 영역에 벗어 나지 않게 left, top, width, height 영억 설정
     // left is invalid
     if(left < 0) {
-      width = width + left
       left = 0
-      // console.log('ss', width)
     }
     // top is invalid
     if(top < 0) {
@@ -315,6 +322,8 @@ class MyCropper extends Component {
       toImgTopStyle: top,
       frameWidthStyle: width,
       frameHeightStyle: height
+    }, () => {
+      if(callback) callback(this)
     })
 
     console.log('calc position \n','widht ', width, 'height ', height, 'left ', left, 'top ', top)
@@ -371,8 +380,7 @@ class MyCropper extends Component {
                   style={deepExtend({},
                     styles.img,
                     {
-                      //자를 이미지 부분이 정확하게 나오기 위해서 프레임 left값 top값을 빼준다.
-                      marginLeft: - this.state.toImgLeftStyle,
+                      marginLeft: -this.state.toImgLeftStyle,
                       marginTop: - this.state.toImgTopStyle
                     }
                   )}
@@ -398,14 +406,16 @@ MyCropper.PropTypes = {
   height: PropTypes.number,
   fixedRatio: PropTypes.bool,
   allowNewSelection: PropTypes.bool,
+  disabled: PropTypes.bool,
   styles: PropTypes.object,
   onImgLoad: PropTypes.function,
+  beforeImgLoad: PropTypes.function,
   onChange: PropTypes.function,
 }
 
 MyCropper.defaultProps = {
-  width: 150,
-  height: 150,
+  width: 200,
+  height: 200,
   fixedRatio: true,
   allowNewSelection: true,
   ratio: 1,
@@ -413,6 +423,7 @@ MyCropper.defaultProps = {
   originY: 0,
   styles: {},
   onImgLoad: function () {},
+  beforeImgLoad: function () {},
 }
 
 /*
@@ -430,9 +441,6 @@ let defaultStyles = {
     WebkitPerspective: 1000,
     WebkitBackfaceVisibility: 'hidden'
   },
-  source_img: {
-    float: 'left'
-  },
 
   clone: {
     width: '100%',
@@ -445,6 +453,10 @@ let defaultStyles = {
 
   source: {
     overflow: 'hidden'
+  },
+
+  source_img: {
+    float: 'left'
   },
 
   modal: {
@@ -464,7 +476,6 @@ let defaultStyles = {
     bottom: 0,
     right: 0,
     display: 'none',
-    border:'1px solid red'
   },
 
   dragging_frame: {
