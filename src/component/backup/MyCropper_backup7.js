@@ -161,7 +161,6 @@ class MyCropper extends Component {
       // console.log('drag start page position \n', 'pageX', pageX, 'pageY', pageY)
     }
     // if no action and allowNewSelection, then create a new frame
-    // 새로운 프레임 생성 조건
     if(!action && allowNewSelection) {
       let container = ReactDOM.findDOMNode(this.refs.container)
       const {offsetLeft, offsetTop} = container
@@ -182,7 +181,6 @@ class MyCropper extends Component {
       }, () => this.calcPosition(frameWidth, frameHeight, originX, originY))
       // console.log("drag start \n", "originX", originX, "originY", originY)
     }
-
   }
 
   // judge whether to create new frame, frame or frame dot move accroding to action
@@ -480,8 +478,8 @@ MyCropper.PropTypes = {
 }
 
 MyCropper.defaultProps = {
-  width: 300,
-  height: 300,
+  width: 150,
+  height: 150,
   fixedRatio: true,
   allowNewSelection: true,
   ratio: 1,
