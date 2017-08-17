@@ -12,14 +12,18 @@ class ImageProcessor extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('will Receive Props', nextProps.effect)
+    // console.log('will Receive Props', nextProps.effect)
     if (this.props.effect !== nextProps.effect) {
       this.applyEffect(nextProps.effect);
+    } else {
+      this.setState({
+        src: nextProps.src
+      })
     }
   }
 
   componentDidMount() {
-    console.log('did mount')
+    // console.log('did mount')
     setTimeout(()=> {
       const isRendered = this.img.width > 0 && this.img.height > 0;
       if (isRendered) {

@@ -67,6 +67,18 @@ class MyCropper extends Component {
     this.imgGetSizeBeforeLoad()
   }
 
+  componentWillReceiveProps(nextProps) {
+    // console.log(nextProps.ratio)
+    if(this.props.ratio !== nextProps.ratio) {
+      let {fixedRatio, width, height} = this.props
+
+      this.setState({
+        frameWidth: width,
+        frameHeight: fixedRatio ? (width/nextProps.ratio): height,
+      }, ()=> this.initStyles()
+    )}
+  }
+
   // adjust image height when image size scaleing change, also initialize styles
   // 이미지 사이즈 초기화
   imgGetSizeBeforeLoad() {
@@ -182,7 +194,6 @@ class MyCropper extends Component {
       }, () => this.calcPosition(frameWidth, frameHeight, originX, originY))
       // console.log("drag start \n", "originX", originX, "originY", originY)
     }
-
   }
 
   // judge whether to create new frame, frame or frame dot move accroding to action
@@ -214,11 +225,14 @@ class MyCropper extends Component {
   // stop dragging
   handleDragStop(e) {
     if(this.state.dragging) {
+
       e.preventDefault()
       // frame container 엘리멘탈
       const frameNode =ReactDOM.findDOMNode(this.refs.frameNode)
       const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
       const {imgWidth, imgHeight} = this.state
+
+      console.log('stop', offsetHeight)
 
       // new frame move를 위해 위치 정보 저장
       this.setState({
@@ -480,8 +494,8 @@ MyCropper.PropTypes = {
 }
 
 MyCropper.defaultProps = {
-  width: 300,
-  height: 300,
+  width: 200,
+  height: 200,
   fixedRatio: true,
   allowNewSelection: true,
   ratio: 1,
