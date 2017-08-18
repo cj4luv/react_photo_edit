@@ -232,8 +232,6 @@ class MyCropper extends Component {
       const {offsetLeft, offsetTop, offsetWidth, offsetHeight} = frameNode
       const {imgWidth, imgHeight} = this.state
 
-      console.log('stop', offsetHeight)
-
       // new frame move를 위해 위치 정보 저장
       this.setState({
         originX: offsetLeft,
