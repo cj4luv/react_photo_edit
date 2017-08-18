@@ -16,9 +16,10 @@ class App extends Component {
       cropFrameRatio: 1,
 
       croppedImageResize: {
-        width:250,
-        height:250,
-      }
+        width:500,
+        height:500,
+      },
+      rangeValue: 0,
     };
   }
 
@@ -30,11 +31,9 @@ class App extends Component {
 
   handleCrop(param){
     let node = this.refs[param];
-
     this.setState({
        [param]: node.crop(this.state.croppedImageResize)
     });
-
   }
 
   handleFilter(type) {
@@ -45,7 +44,8 @@ class App extends Component {
 
   handleRatio(ratio) {
     this.setState({
-      cropFrameRatio: ratio
+      cropFrameRatio: ratio,
+      effect:'none'
     })
   }
 
@@ -87,6 +87,7 @@ class App extends Component {
               alt='react image sample'
               src={this.state.image}
               effect={this.state.effect}
+              options={{value: 1}}
             />
 
             <div>
@@ -102,6 +103,22 @@ class App extends Component {
               <button onClick={()=> this.handleFilter('lark')} style={styles.buttons}>
                 lark
               </button>
+
+              <button onClick={()=> this.handleFilter('brighten')} style={styles.buttons}>
+                brighten
+              </button>
+
+              <input type="range"
+                ref='brighten'
+                value={this.state.rangeValue}
+                onChange={(e)=> {
+                  this.setState({
+                    rangeValue: e.target.value
+                  }, ()=> {
+                    this.handleFilter('brighten');
+                  })
+                }}
+              />
             </div>
 
           </div>

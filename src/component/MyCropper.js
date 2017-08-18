@@ -70,13 +70,29 @@ class MyCropper extends Component {
   componentWillReceiveProps(nextProps) {
     // console.log(nextProps.ratio)
     if(this.props.ratio !== nextProps.ratio) {
-      let {fixedRatio, width, height} = this.props
+      let {fixedRatio, width} = this.props
 
       this.setState({
-        frameWidth: width,
-        frameHeight: fixedRatio ? (width/nextProps.ratio): height,
+        frameWidth: nextProps.width,
+        frameHeight: fixedRatio ? (width/nextProps.ratio): nextProps.height,
+        originX: nextProps.originX,
+        originY: nextProps.originY
       }, ()=> this.initStyles()
-    )}
+      )
+    }
+
+    const {width, height, originX, originY} = this.props
+
+    if (width !== nextProps.width || height !== nextProps.height
+        || originX !== nextProps.originX || originY !== nextProps.originY) {
+        // update frame
+        this.setState({
+            frameWidth: nextProps.width,
+            frameHeight: nextProps.height,
+            originX: nextProps.originX,
+            originY: nextProps.originY
+        }, () => this.initStyles() )
+    }
   }
 
   // adjust image height when image size scaleing change, also initialize styles
@@ -379,7 +395,7 @@ class MyCropper extends Component {
   // crop image
   crop(param){
 
-    console.log(param.width, this.props.ratio)
+    // console.log(param.width, this.props.ratio)
 
     const {frameWidth, frameHeight, originX, originY, imgWidth} = this.state
     const {fixedRatio, ratio} = this.props

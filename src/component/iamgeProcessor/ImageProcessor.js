@@ -15,7 +15,12 @@ class ImageProcessor extends Component {
     // console.log('will Receive Props', nextProps.effect)
     if (this.props.effect !== nextProps.effect) {
       this.applyEffect(nextProps.effect);
-    } else {
+    }
+
+    if(this.props.effect === 'brighten') {
+      this.applyEffect(nextProps.effect);
+    }
+    else {
       this.setState({
         src: nextProps.src
       })
@@ -67,6 +72,7 @@ class ImageProcessor extends Component {
 
   getEffectAppliedImageData(effect) {
     return new Promise((resolve) => {
+
       const canvas = this.getSingletonCanvas(this.img.width, this.img.height);
       const context = canvas.getContext('2d');
       context.drawImage(this.img, 0, 0);

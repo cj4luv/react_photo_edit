@@ -54,7 +54,10 @@ export const opacity = ({ data }, options = {}) => {
 };
 
 export const brighten = ({ data }, options = {}) => {
-  const val = options.value || 50;
+
+  // const val = options.value || 50;
+  const val = options.value;
+  // console.log('brighten', val, 'data',data)
   for (let i = 0, n = data.length; i < n; i += 4) {
     data[i] += val;
     data[i + 1] += val;
