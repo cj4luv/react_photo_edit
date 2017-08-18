@@ -377,8 +377,12 @@ class MyCropper extends Component {
   }
 
   // crop image
-  crop(){
+  crop(param){
+
+    console.log(param.width, this.props.ratio)
+
     const {frameWidth, frameHeight, originX, originY, imgWidth} = this.state
+    const {fixedRatio, ratio} = this.props
     let canvas = document.createElement('canvas')
     let img = ReactDOM.findDOMNode(this.refs.img)
     // crop accroding image's natural width
@@ -388,10 +392,16 @@ class MyCropper extends Component {
     const realOriginX = originX * _scale
     const realOriginY = originY * _scale
 
-    canvas.width = frameWidth
-    canvas.height = frameHeight
+    // canvas.width = frameWidth
+    // canvas.height = frameHeight
 
-    canvas.getContext("2d").drawImage(img, realOriginX, realOriginY, realFrameWidth, realFrameHeight, 0, 0, frameWidth, frameHeight)
+    // canvas.getContext("2d").drawImage(img, realOriginX, realOriginY, realFrameWidth, realFrameHeight, 0, 0, frameWidth, frameHeight)
+
+    canvas.width = param.width
+    canvas.height = fixedRatio ? (param.width/ratio):param.height
+
+    canvas.getContext("2d").drawImage(img, realOriginX, realOriginY, realFrameWidth, realFrameHeight, 0, 0, canvas.width, canvas.height)
+
     return canvas.toDataURL()
   }
 

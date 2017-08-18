@@ -10,10 +10,15 @@ class App extends Component {
       imageLoaded: false,
       effect: 'none',
 
-      cropWidth: 400,
-      cropHeight: 400,
+      cropFrameWidth: 400,
+      cropFrameHeight: 400,
 
-      cropRatio: 1,
+      cropFrameRatio: 1,
+
+      croppedImageResize: {
+        width:250,
+        height:250,
+      }
     };
   }
 
@@ -23,11 +28,13 @@ class App extends Component {
     });
   }
 
-  handleClick(state){
-    let node = this.refs[state];
+  handleCrop(param){
+    let node = this.refs[param];
+
     this.setState({
-       [state]: node.crop()
+       [param]: node.crop(this.state.croppedImageResize)
     });
+
   }
 
   handleFilter(type) {
@@ -38,7 +45,7 @@ class App extends Component {
 
   handleRatio(ratio) {
     this.setState({
-      cropRatio: ratio
+      cropFrameRatio: ratio
     })
   }
 
@@ -55,22 +62,25 @@ class App extends Component {
           originY={50}
           fixedRatio={true}
           allowNewSelection={false}
-          width={this.state.cropWidth}
-          height={this.state.cropHeight}
-          ratio={this.state.cropRatio}
+          width={this.state.cropFrameWidth}
+          height={this.state.cropFrameHeight}
+          ratio={this.state.cropFrameRatio}
         />
 
         <br />
-
+        <h4>frame raito</h4>
         <div>
           <button onClick={()=>this.handleRatio(1)}>1:1</button>
           <button onClick={()=>this.handleRatio(4/3)}>4:3</button>
+          <button onClick={()=>this.handleRatio(16/9)}>16:9</button>
+          <button onClick={()=>this.handleRatio(91/50)}>1.85:1</button>
+          <button onClick={()=>this.handleRatio(239/100)}>2.39:1</button>
         </div>
 
         <br />
-        {this.state.imageLoaded ? <button onClick={() => this.handleClick('image')}>crop</button> : null}
+        {this.state.imageLoaded ? <button onClick={() => this.handleCrop('image')}>crop</button> : null}
         <h4>after crop</h4>
-        {/* {this.state.image ? <img src={this.state.image} alt=""/> : null} */}
+
         { this.state.image ?
           <div>
             <ImageProcessor
