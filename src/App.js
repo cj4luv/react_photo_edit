@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+// import ReactDOM from 'react-dom';
 import MyCropper from './component/MyCropper';
 import ImageProcessor from './component/iamgeProcessor/ImageProcessor';
 
@@ -21,6 +22,14 @@ class App extends Component {
       },
       rangeValue: 0,
     };
+  }
+
+  componentWillMount() {
+    // window.onload = function() {
+    //   function sports(){}
+    // }
+    //
+    // debugger;
   }
 
   handleImageLoaded(state) {
@@ -51,7 +60,6 @@ class App extends Component {
 
   render() {
     const src = "/img/twice.png";
-
     return (
       <div style={{
         width:'500px',
@@ -79,6 +87,13 @@ class App extends Component {
 
         <br />
         {this.state.imageLoaded ? <button onClick={() => this.handleCrop('image')}>crop</button> : null}
+        {/* {this.state.imageLoaded ? <button onClick={() => {
+
+          var node = ReactDOM.findDOMNode(this.refs.image)
+          var container = node.parentNode;
+          container.removeChild(node)
+        }
+        }>crop</button> : null} */}
         <h4>after crop</h4>
 
         { this.state.image ?
@@ -111,13 +126,18 @@ class App extends Component {
               <input type="range"
                 ref='brighten'
                 value={this.state.rangeValue}
+                min={-100}
+                max={100}
                 onChange={(e)=> {
+                  // console.log(e)
                   this.setState({
                     rangeValue: e.target.value
                   }, ()=> {
+                    // console.log()
                     this.handleFilter('brighten');
                   })
                 }}
+
               />
             </div>
 

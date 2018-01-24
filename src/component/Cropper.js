@@ -89,6 +89,8 @@ class Cropper extends Component {
         document.addEventListener('touchend', this.handleDragStop.bind(this))
 
         this.imgGetSizeBeforeLoad()
+
+        console.log(this.props.beforeImgLoad)
     }
 
     componentWillUnmount() {

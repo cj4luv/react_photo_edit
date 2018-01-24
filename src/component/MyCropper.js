@@ -65,6 +65,7 @@ class MyCropper extends Component {
     document.addEventListener('touchend', this.handleDragStop.bind(this))
 
     this.imgGetSizeBeforeLoad()
+
   }
 
   componentWillReceiveProps(nextProps) {
